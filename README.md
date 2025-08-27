@@ -23,7 +23,7 @@ Plugin for a mock REST and File-based API integrated in Vite server.
 
 
 # vite-plugin-api-rest-fs-mock
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/nDriaDev/vite-plugin-api-rest-fs-mock)
+
 
 A powerful Vite plugin to create mock REST and file-based APIs directly within your Vite development server. Accelerate your frontend development by simulating backend behavior without writing a separate server. This plugin allows you to serve static files from your file system, define custom handlers for dynamic responses, and simulate complex API logic with ease.
 
