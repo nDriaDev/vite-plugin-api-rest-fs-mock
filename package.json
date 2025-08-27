@@ -1,0 +1,77 @@
+{
+	"name": "@ndriadev/vite-plugin-api-rest-fs-mock",
+	"description": "Plugin for a mock REST and File-based API integrated in Vite server.",
+	"private": false,
+	"version": "1.0.0",
+	"type": "module",
+	"files": [
+		"dist/"
+	],
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"require": "./dist/index.cjs",
+			"import": "./dist/index.mjs",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"dev": "unbuild --stub",
+		"build": "unbuild",
+		"test": "vitest",
+		"test:coverage": "vitest --coverage",
+		"lint": "eslint .",
+		"docs": "typedoc --options typedoc.config.cjs && node scripts/copy-resources.js",
+		"release:patch": "pnpm version patch",
+		"release:minor": "pnpm version minor",
+		"release:major": "pnpm version major",
+		"postversion": "pnpm run docs && git add . && git commit -m '[FIX] docs' && git push && git push origin --tags && pnpm publish --access public",
+		"prepublishOnly": "pnpm run lint && pnpm run build"
+	},
+	"engines": {
+		"node": "^18.0.0 || >=20.0.0"
+	},
+	"devDependencies": {
+		"@eslint/eslintrc": "^3.3.0",
+		"@eslint/js": "^9.21.0",
+		"@types/node": "^22.13.9",
+		"eslint": "^9.21.0",
+		"globals": "^16.0.0",
+		"typescript-eslint": "^8.26.0",
+		"unbuild": "^3.5.0",
+		"vitest": "^3.2.4"
+	},
+	"peerDependencies": {
+		"vite": "^4.0.0 || ^5.0.0 || ^6.0.0 || >=7.0.0"
+	},
+	"keywords": [
+		"vite",
+		"vite-plugin",
+		"plugin",
+		"mock",
+		"server",
+		"api",
+		"mock-server",
+		"rest",
+		"FS",
+		"file-system",
+		"file-based"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock"
+	},
+	"author": {
+		"name": "Andrea Cosentino",
+		"email": "andreacosentino.work@gmail.com",
+		"url": "https://github.com/nDriaDev/"
+	},
+	"readmeFilename": "README.md",
+	"bugs": {
+		"url": "https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock/issues"
+	},
+	"homepage": "https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock",
+	"license": "MIT"
+}
