@@ -1,5 +1,5 @@
 {
-	"name": "@ndriadev/vite-plugin-api-rest-fs-mock",
+	"name": "@ndriadev/vite-plugin-rest-fs-api",
 	"description": "Plugin for a mock REST and File-based API integrated in Vite server.",
 	"private": false,
 	"version": "1.0.0",
@@ -61,7 +61,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock"
+		"url": "git+https://github.com/nDriaDev/vite-plugin-rest-fs-api"
 	},
 	"author": {
 		"name": "Andrea Cosentino",
@@ -70,8 +70,8 @@
 	},
 	"readmeFilename": "README.md",
 	"bugs": {
-		"url": "https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock/issues"
+		"url": "https://github.com/nDriaDev/vite-plugin-rest-fs-api/issues"
 	},
-	"homepage": "https://github.com/nDriaDev/vite-plugin-api-rest-fs-mock",
+	"homepage": "https://github.com/nDriaDev/vite-plugin-rest-fs-api",
 	"license": "MIT"
 }

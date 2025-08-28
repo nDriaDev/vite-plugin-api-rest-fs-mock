@@ -1,10 +1,10 @@
 <div align="left" class="">
-<h1>VITE-PLUGIN-API-REST-FS-MOCK</h1>
+<h1>VITE-PLUGIN-REST-FS-API</h1>
 <p><em>Seamless Mock APIs, Accelerate Your Development Journey</em></p>
 
-<img alt="last-commit" src="https://img.shields.io/github/last-commit/nDriaDev/vite-plugin-api-rest-fs-mock?style=flat&amp;logo=git&amp;logoColor=white&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
-<img alt="repo-top-language" src="https://img.shields.io/github/languages/top/nDriaDev/vite-plugin-api-rest-fs-mock?style=flat&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
-<img alt="repo-language-count" src="https://img.shields.io/github/languages/count/nDriaDev/vite-plugin-api-rest-fs-mock?style=flat&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="last-commit" src="https://img.shields.io/github/last-commit/nDriaDev/vite-plugin-rest-fs-api?style=flat&amp;logo=git&amp;logoColor=white&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="repo-top-language" src="https://img.shields.io/github/languages/top/nDriaDev/vite-plugin-rest-fs-api?style=flat&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
+<img alt="repo-language-count" src="https://img.shields.io/github/languages/count/nDriaDev/vite-plugin-rest-fs-api?style=flat&amp;color=0080ff" class="inline-block mx-1" style="margin: 0px 2px;">
 <p><em>Built with the tools and technologies:</em></p>
 <img alt="JSON" src="https://img.shields.io/badge/JSON-000000.svg?style=flat&amp;logo=JSON&amp;logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
 <img alt="Markdown" src="https://img.shields.io/badge/Markdown-000000.svg?style=flat&amp;logo=Markdown&amp;logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
@@ -18,11 +18,11 @@
 <img alt="YAML" src="https://img.shields.io/badge/YAML-CB171E.svg?style=flat&amp;logo=YAML&amp;logoColor=white" class="inline-block mx-1" style="margin: 0px 2px;">
 </div>
 
-# vite-plugin-api-rest-fs-mock
+# vite-plugin-rest-fs-api
 Plugin for a mock REST and File-based API integrated in Vite server.
 
 
-# vite-plugin-api-rest-fs-mock
+# vite-plugin-rest-fs-api
 
 
 A powerful Vite plugin to create mock REST and file-based APIs directly within your Vite development server. Accelerate your frontend development by simulating backend behavior without writing a separate server. This plugin allows you to serve static files from your file system, define custom handlers for dynamic responses, and simulate complex API logic with ease.
@@ -46,13 +46,13 @@ A powerful Vite plugin to create mock REST and file-based APIs directly within y
 
 ```bash
 # pnpm
-pnpm add -D @ndriadev/vite-plugin-api-rest-fs-mock
+pnpm add -D @ndriadev/vite-plugin-rest-fs-api
 
 # npm
-npm install -D @ndriadev/vite-plugin-api-rest-fs-mock
+npm install -D @ndriadev/vite-plugin-rest-fs-api
 
 # yarn
-yarn add -D @ndriadev/vite-plugin-api-rest-fs-mock
+yarn add -D @ndriadev/vite-plugin-rest-fs-api
 ```
 
 ## Usage
@@ -62,7 +62,7 @@ Add the plugin to your `vite.config.ts` file.
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import mockApi from '@ndriadev/vite-plugin-api-rest-fs-mock';
+import mockApi from '@ndriadev/vite-plugin-rest-fs-api';
 
 export default defineConfig({
   plugins: [
@@ -81,8 +81,8 @@ This is the simplest way to get started. Create a directory for your mocks and p
     ```typescript
     // vite.config.ts
     import { defineConfig } from 'vite';
-    import mockApi from '@ndriadev/vite-plugin-api-rest-fs-mock';
-    
+    import mockApi from '@ndriadev/vite-plugin-rest-fs-api';
+
     export default defineConfig({
       plugins: [
         mockApi({
@@ -137,7 +137,7 @@ For dynamic responses, define custom handlers. They use Ant-style path matching 
 
 ```typescript
 // vite.config.ts
-import mockApi from '@ndriadev/vite-plugin-api-rest-fs-mock';
+import mockApi from '@ndriadev/vite-plugin-rest-fs-api';
 
 export default {
   plugins: [
@@ -185,7 +185,7 @@ The plugin provides powerful, built-in pagination and filtering for FS-based res
 
 ```typescript
 // vite.config.ts
-import mockApi from '@ndriadev/vite-plugin-api-rest-fs-mock';
+import mockApi from '@ndriadev/vite-plugin-rest-fs-api';
 
 export default {
   plugins: [
@@ -225,7 +225,7 @@ Use middlewares for cross-cutting concerns like logging or authentication.
 
 ```typescript
 // vite.config.ts
-import mockApi from '@ndriadev/vite-plugin-api-rest-fs-mock';
+import mockApi from '@ndriadev/vite-plugin-rest-fs-api';
 
 export default {
   plugins: [

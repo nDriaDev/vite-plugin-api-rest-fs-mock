@@ -1,7 +1,7 @@
 import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
-    name: "vite-plugin-api-rest-fs-mock",
+    name: "vite-plugin-rest-fs-api",
     entries: ['src/index'],
     externals: ['vite'],
     clean: true,

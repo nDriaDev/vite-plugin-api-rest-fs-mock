@@ -1,5 +1,5 @@
 export const Constants = {
-    PLUGIN_NAME: "vite-plugin-api-rest-fs-mock",
+	PLUGIN_NAME: "vite-plugin-rest-fs-api",
     TOTAL_ELEMENTS_HEADER: "X-Total-Count",
     HTTP_STATUS_CODE: {
         OK: 200,
