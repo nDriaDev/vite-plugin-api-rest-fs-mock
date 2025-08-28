@@ -14,68 +14,69 @@ import { ApiRestFsMockError } from "./Errors";
  * Not used for now. It simulates the options http request behavior
  */
 function handlingOptionsRequest(logger: Logger, matcher: AntPathMatcher, fullUrl: URL, request: ApiRestFsMockRequest, handlers: ApiRestFsMockHandler[], endpointNoPrefix: string, result: HandledRequestData): boolean {
-    logger.debug("handlingOptionsRequest: START");
-    try {
-        if (request.method !== "OPTIONS") {
-            return false;
-        }
-        let allow: Set<string> = new Set<string>();
-        for (const handle of handlers) {
-            const handlerMatched = matcher.doMatch(
-                Utils.requests.addSlash(handle.pattern, "leading"),
-                Utils.requests.addSlash(endpointNoPrefix, "leading"),
-                true,
-                request.params
-            );
-            if (handlerMatched) {
-                if (request.method === handle.method) {
-                    return false;
-                } else {
-                    allow.add(request.method!);
-                }
-            }
-        }
-        if (allow.size > 0) {
-            result.status = Constants.HTTP_STATUS_CODE.OK;
-            result.data = null;
-            result.headers.push({
-                name: "Allow",
-                value: [...allow].join(", ")
-            });
-            const hasCors = !!request.headers["access-control-request-methods"] || !!request.headers["access-control-request-headers"];
-            if (hasCors) {
-                result.headers.push({
-                    name: "Access-Control-Allow-Methods",
-                    value: [...allow].join(", ")
-                });
-            }
-            return true;
-        }
-        throw new ApiRestFsMockError("Request with OPTIONS method doesn't match endpointPrefix.", "NO_HANDLER", fullUrl.pathname);
-    } finally {
-        logger.debug("handlingOptionsRequest: END");
-    }
+	logger.debug("handlingOptionsRequest: START");
+	try {
+		if (request.method !== "OPTIONS") {
+			return false;
+		}
+		let allow: Set<string> = new Set<string>();
+		for (const handle of handlers) {
+			const handlerMatched = matcher.doMatch(
+				Utils.requests.addSlash(handle.pattern, "leading"),
+				Utils.requests.addSlash(endpointNoPrefix, "leading"),
+				true,
+				request.params
+			);
+			if (handlerMatched) {
+				if (request.method === handle.method) {
+					return false;
+				} else {
+					allow.add(request.method!);
+				}
+			}
+		}
+		if (allow.size > 0) {
+			result.status = Constants.HTTP_STATUS_CODE.OK;
+			result.data = null;
+			result.headers.push({
+				name: "Allow",
+				value: [...allow].join(", ")
+			});
+			const hasCors = !!request.headers["access-control-request-methods"] || !!request.headers["access-control-request-headers"];
+			if (hasCors) {
+				result.headers.push({
+					name: "Access-Control-Allow-Methods",
+					value: [...allow].join(", ")
+				});
+			}
+			return true;
+		}
+		throw new ApiRestFsMockError("Request with OPTIONS method doesn't match endpointPrefix.", "NO_HANDLER", fullUrl.pathname);
+	} finally {
+		logger.debug("handlingOptionsRequest: END");
+	}
 }
 
-async function handlingApiFsRequest(logger: Logger, fullUrl: URL, request: ApiRestFsMockRequest, res: ServerResponse, paginationPlugin: ApiRestFsMockOptionsRequired["pagination"], filtersPlugin: ApiRestFsMockOptionsRequired["filters"], parser: ApiRestFsMockOptionsRequired["parser"], handler: ApiRestFsMockHandler| null, endpointPrefix: string[], fullFsDir: string | null, result: HandledRequestData): Promise<boolean> {
-    logger.debug("handlingApiFsRequest: START");
+async function handlingApiFsRequest(logger: Logger, fullUrl: URL, request: ApiRestFsMockRequest, res: ServerResponse, paginationPlugin: ApiRestFsMockOptionsRequired["pagination"], filtersPlugin: ApiRestFsMockOptionsRequired["filters"], parser: ApiRestFsMockOptionsRequired["parser"], handler: ApiRestFsMockHandler | null, endpointPrefix: string[], fullFsDir: string | null, result: HandledRequestData): Promise<boolean> {
+	logger.debug("handlingApiFsRequest: START");
 	try {
 		const IS_API_REST_FS = handler !== null && handler.handle === "FS",
 			paginationHandler = handler !== null ? handler.pagination : "none",
 			filtersHandler = handler !== null ? handler.filters : "none",
 			postHandleHandler = handler !== null ? handler.postHandle : undefined;
-        if (fullFsDir === null) {
-            if (IS_API_REST_FS) {
+		if (fullFsDir === null) {
+			if (IS_API_REST_FS) {
 				throw new ApiRestFsMockError("Request matching Api Rest Fs handler but fsDir provide doesn't exists.", "ERROR", fullUrl.pathname);
-            } else {
-                return false;
-            }
-        }
-        const dataFile: { originalData: any, data: any, mimeType: string, total: number } = {
-            total: 0,
-            data: null,
-            originalData: null,
-            mimeType: MimeType[".bin"]
+			} else {
+				return false;
+			}
+		}
+		handler === null && logger.info("Request handling with FS API");
+		const dataFile: { originalData: any, data: any, mimeType: string, total: number } = {
+			total: 0,
+			data: null,
+			originalData: null,
+			mimeType: MimeType[".bin"]
 		}
 		let url = request.url ?? "";
 		if (IS_API_REST_FS && handler.preHandle) {
@@ -92,50 +93,50 @@ async function handlingApiFsRequest(logger: Logger, fullUrl: URL, request: ApiRe
 		}
 
 		const endpointNoPrefix = Utils.requests.removeSlash(Utils.requests.removeEndpointPrefix(url, endpointPrefix), "trailing");
-        const filePath = join(fullFsDir, endpointNoPrefix);
-        let file: string = filePath,
-            fileFound;
-        if (await Utils.files.isFileExists(filePath)) {
-            file = filePath;
-            fileFound = true;
-        } else if (await Utils.files.isDirExists(filePath)) {
-            const files: string[] = await Utils.files.directoryFileList(filePath);
-            const fileIndex = files.find(el => el.startsWith("index.json")) ?? null;
-            if (fileIndex) {
-                fileFound = true;
-                file = join(filePath, fileIndex)
-            } else {
-                fileFound = false;
-            }
-        } else {
-            const pathBeforeLastSegment = join(filePath, "..");
-            const lastSegmentPath = Utils.requests.removeSlash(filePath.substring(pathBeforeLastSegment.length), "both");
-            if (lastSegmentPath !== "" && await Utils.files.isDirExists(pathBeforeLastSegment)) {
-                const files: string[] = await Utils.files.directoryFileList(filePath);
-                const fileExt = files.find(f => f.startsWith(lastSegmentPath)) ?? null;
-                if (fileExt) {
-                    file = join(pathBeforeLastSegment, fileExt);
-                    fileFound = true;
-                } else {
-                    fileFound = false;
-                }
-            } else {
-                fileFound = false;
-            }
-        }
-        if (fileFound) {
-            const { ext } = parse(file);
-            dataFile.mimeType = ext in MimeType ? MimeType[ext as keyof typeof MimeType] : MimeType[".bin"];
+		const filePath = join(fullFsDir, endpointNoPrefix);
+		let file: string = filePath,
+			fileFound;
+		if (await Utils.files.isFileExists(filePath)) {
+			file = filePath;
+			fileFound = true;
+		} else if (await Utils.files.isDirExists(filePath)) {
+			const files: string[] = await Utils.files.directoryFileList(filePath);
+			const fileIndex = files.find(el => el.startsWith("index.json")) ?? null;
+			if (fileIndex) {
+				fileFound = true;
+				file = join(filePath, fileIndex)
+			} else {
+				fileFound = false;
+			}
+		} else {
+			const pathBeforeLastSegment = join(filePath, "..");
+			const lastSegmentPath = Utils.requests.removeSlash(filePath.substring(pathBeforeLastSegment.length), "both");
+			if (lastSegmentPath !== "" && await Utils.files.isDirExists(pathBeforeLastSegment)) {
+				const files: string[] = await Utils.files.directoryFileList(filePath);
+				const fileExt = files.find(f => f.startsWith(lastSegmentPath)) ?? null;
+				if (fileExt) {
+					file = join(pathBeforeLastSegment, fileExt);
+					fileFound = true;
+				} else {
+					fileFound = false;
+				}
+			} else {
+				fileFound = false;
+			}
+		}
+		if (fileFound) {
+			const { ext } = parse(file);
+			dataFile.mimeType = ext in MimeType ? MimeType[ext as keyof typeof MimeType] : MimeType[".bin"];
 			try {
 				dataFile.data = dataFile.mimeType === MimeType[".json"]
 					? await Utils.files.readingStreamFile(file)
 					: null;
-                dataFile.total = 1;
-            } catch (error: any) {
+				dataFile.total = 1;
+			} catch (error: any) {
 				logger.error("handlingApiFsRequest: Error reading file ", file, error);
 				throw new ApiRestFsMockError(`Error reading file ${file}`, "ERROR", fullUrl.pathname);
-            }
-        }
+			}
+		}
 		dataFile.originalData = dataFile.data;
 
 		if (IS_API_REST_FS && !!postHandleHandler) {
@@ -388,81 +389,82 @@ async function handlingApiFsRequest(logger: Logger, fullUrl: URL, request: ApiRe
 				return false;
 		}
 		return true;
-    } catch (error: any) {
+	} catch (error: any) {
 		if (error instanceof ApiRestFsMockError) {
 			throw error;
 		}
 		logger.debug("handlingApiFsRequest: ERROR - ", error);
 		throw new ApiRestFsMockError(error, "ERROR", fullUrl.pathname);
-    } finally {
-        logger.debug("handlingApiFsRequest: END");
-    }
+	} finally {
+		logger.debug("handlingApiFsRequest: END");
+	}
 }
 
 async function handlingApiRestRequest(logger: Logger, matcher: AntPathMatcher, fullUrl: URL, request: ApiRestFsMockRequest, res: ServerResponse, handlers: ApiRestFsMockOptionsRequired["handlers"], middlewares: ApiRestFsMockOptionsRequired["middlewares"], errorMiddlewares: ApiRestFsMockOptionsRequired["errorMiddlewares"], delay: ApiRestFsMockOptionsRequired["delay"], pagination: ApiRestFsMockOptionsRequired["pagination"], filters: ApiRestFsMockOptionsRequired["filters"], parser: ApiRestFsMockOptionsRequired["parser"], endpointPrefix: string[], endpointNoPrefix: string, fullFsDir: string | null, result: HandledRequestData): Promise<boolean> {
-    logger.debug("handlingApiRestRequest: START");
-    try {
-        let handler: typeof handlers[number] | null = null;
-        for (const handle of handlers) {
-            const handlerMatched = matcher.doMatch(
-                Utils.requests.addSlash(handle.pattern, "leading"),
-                Utils.requests.addSlash(endpointNoPrefix, "leading"),
-                true,
-                request.params
-            );
-            if (handlerMatched) {
-                if (handle.disabled) {
-                    logger.debug("handlingApiRestRequest: Request handler is disabled");
-                } else if (request.method !== handle.method) {
-                    logger.debug("handlingApiRestRequest: Request url and handler have different http method");
-                } else {
-                    handler = handle;
-                    break;
-                }
-            }
-        }
-        if (handler !== null) {
-            logger.debug("handlingApiRestRequest: using REST api");
-            const chain = Utils.requests.MiddlewaresChain();
-            try {
-                chain.use(middlewares, errorMiddlewares);
-                logger.debug("handlingApiRestRequest: applying middleware chain");
+	logger.debug("handlingApiRestRequest: START");
+	try {
+		let handler: typeof handlers[number] | null = null;
+		for (const handle of handlers) {
+			const handlerMatched = matcher.doMatch(
+				Utils.requests.addSlash(handle.pattern, "leading"),
+				Utils.requests.addSlash(endpointNoPrefix, "leading"),
+				true,
+				request.params
+			);
+			if (handlerMatched) {
+				if (handle.disabled) {
+					logger.debug("handlingApiRestRequest: Request handler is disabled");
+				} else if (request.method !== handle.method) {
+					logger.debug("handlingApiRestRequest: Request url and handler have different http method");
+				} else {
+					handler = handle;
+					break;
+				}
+			}
+		}
+		if (handler !== null) {
+			logger.debug("handlingApiRestRequest: using REST api");
+			logger.info("Request handling with REST API: handler matched= ", handler.pattern);
+			const chain = Utils.requests.MiddlewaresChain();
+			try {
+				chain.use(middlewares, errorMiddlewares);
+				logger.debug("handlingApiRestRequest: applying middleware chain");
 				await chain.handle(request, res);
 
 				logger.debug("handlingApiRestRequest: parsing request");
 				await Utils.requests.parseRequest(request, res, fullUrl, handler.parser !== undefined ? handler.parser : parser);
 
-                if (handler.delay || delay) {
-                    const delayHandler = handler.delay || delay;
-                    logger.debug("handlingApiRestRequest: request execution will be delayed by ", delayHandler.toString());
-                    await new Promise(res => setTimeout(res, delayHandler));
-                }
+				if (handler.delay || delay) {
+					const delayHandler = handler.delay || delay;
+					logger.debug("handlingApiRestRequest: request execution will be delayed by ", delayHandler.toString());
+					await new Promise(res => setTimeout(res, delayHandler));
+				}
 
-                if (handler.handle === "FS") {
-                    logger.debug("handlingApiRestRequest: API FS REST handler");
-                    return await handlingApiFsRequest(logger, fullUrl, request, res, pagination, filters, parser, handler, endpointPrefix, fullFsDir, result);
-                }
-                logger.debug("handlingApiRestRequest: API REST handler");
-                await handler.handle(request, res);
+				if (handler.handle === "FS") {
+					logger.debug("handlingApiRestRequest: API FS REST handler");
+					return await handlingApiFsRequest(logger, fullUrl, request, res, pagination, filters, parser, handler, endpointPrefix, fullFsDir, result);
+				}
+				logger.debug("handlingApiRestRequest: API REST handler");
+				await handler.handle(request, res);
 				throw new ApiRestFsMockError("REST", "MANUALLY_HANDLED", fullUrl.pathname);
 			} catch (error) {
 				if (error instanceof ApiRestFsMockError) {
 					throw error;
 				}
-                logger.debug("handlingApiRestRequest: ERROR applying middleware chain");
+				logger.debug("handlingApiRestRequest: ERROR applying middleware chain");
 				throw new ApiRestFsMockError(error as Error, "ERROR", fullUrl.pathname);
-            }
-        }
-        return false;
+			}
+		}
+		return false;
 	} catch (error: any) {
 		if (error instanceof ApiRestFsMockError) {
 			throw error;
 		}
-        logger.debug("handlingApiRestRequest: ERROR - ", error);
-        throw new ApiRestFsMockError(error, "ERROR", fullUrl.pathname);
-    } finally {
-        logger.debug("handlingApiRestRequest: END");
-    }
+		logger.debug("handlingApiRestRequest: ERROR - ", error);
+		throw new ApiRestFsMockError(error, "ERROR", fullUrl.pathname);
+	} finally {
+		logger.debug("handlingApiRestRequest: END");
+	}
 }
 
 export const runPlugin = async (req: IncomingMessage, response: ServerResponse, next: Connect.NextFunction, logger: Logger, options: ApiRestFsMockOptionsRequired) => {
@@ -565,46 +567,46 @@ export const runPlugin = async (req: IncomingMessage, response: ServerResponse, 
 }
 
 export const runPluginInternal = async (req: IncomingMessage, res: ServerResponse, logger: Logger, options: ApiRestFsMockOptionsRequired) => {
-    const { config, endpointPrefix, handlers, matcher, middlewares, errorMiddlewares, delay, fullFsDir, filters, pagination, parser } = options;
+	const { config, endpointPrefix, handlers, matcher, middlewares, errorMiddlewares, delay, fullFsDir, filters, pagination, parser } = options;
 	const fullUrl = Utils.requests.buildFullUrl(req, config);
 	const endpointNoPrefix = Utils.requests.removeEndpointPrefix(fullUrl.pathname, endpointPrefix);
-    let requ: ApiRestFsMockRequest = req as ApiRestFsMockRequest;
-    try {
-        logger.debug(`runPluginInternal: START request url = ${req.url}`);
+	let requ: ApiRestFsMockRequest = req as ApiRestFsMockRequest;
+	try {
+		logger.debug(`runPluginInternal: START request url = ${req.url}`);
 
-        const result: HandledRequestData = {
-            status: null,
-            data: null,
-            headers: []
-        }
+		const result: HandledRequestData = {
+			status: null,
+			data: null,
+			headers: []
+		}
 
-        if (!Utils.requests.matchesEndpointPrefix(req.url, endpointPrefix)) {
-            logger.debug(`runPluginInternal: Request with url ${req.url} doesn't match endpointPrefix option.`);
-            throw new ApiRestFsMockError("Request doesn't match endpointPrefix.", "NO_HANDLER", fullUrl.pathname);
+		if (!Utils.requests.matchesEndpointPrefix(req.url, endpointPrefix)) {
+			logger.info(`runPluginInternal: Request with url ${req.url} doesn't match endpointPrefix option.`);
+			throw new ApiRestFsMockError("Request doesn't match endpointPrefix.", "NO_HANDLER", fullUrl.pathname);
 		}
 		const request = Utils.requests.createRequest(req);
 		requ = request;
 
 		logger.debug(`runPluginInternal: fullUrl=${endpointNoPrefix}, endpointNoPrefix=${endpointNoPrefix}`);
 
-        let handled = await handlingApiRestRequest(logger, matcher, fullUrl, request, res, handlers, middlewares, errorMiddlewares, delay, pagination, filters, parser, endpointPrefix, endpointNoPrefix, fullFsDir, result);
+		let handled = await handlingApiRestRequest(logger, matcher, fullUrl, request, res, handlers, middlewares, errorMiddlewares, delay, pagination, filters, parser, endpointPrefix, endpointNoPrefix, fullFsDir, result);
 		if (handled) {
 			return result;
 		}
 
-        handled = await handlingApiFsRequest(logger, fullUrl, request, res, pagination, filters, parser, null, endpointPrefix, fullFsDir, result);
-        if (handled) {
-            return result;
+		handled = await handlingApiFsRequest(logger, fullUrl, request, res, pagination, filters, parser, null, endpointPrefix, fullFsDir, result);
+		if (handled) {
+			return result;
 		}
 
-        throw new ApiRestFsMockError(`Impossible handling request with url ${fullUrl}`, "NO_HANDLER", fullUrl.pathname);
+		throw new ApiRestFsMockError(`Impossible handling request with url ${fullUrl}`, "NO_HANDLER", fullUrl.pathname);
 	} catch (error: any) {
 		if (error instanceof ApiRestFsMockError) {
 			throw error;
 		}
 		logger.error("runPluginInternal: ERROR - ", error);
 		throw new ApiRestFsMockError(error, "ERROR", fullUrl.pathname, Constants.HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, { requ });
-    } finally {
-        logger.debug(`runPluginInternal: FINISH`);
-    }
+	} finally {
+		logger.debug(`runPluginInternal: FINISH`);
+	}
 }
